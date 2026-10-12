@@ -1,0 +1,5 @@
+// helper functions
+func ++ do 1 + end
+func -- do 1 - end
+func ~ do 0 == if 1 else 0 end end
+func println do print NL print end

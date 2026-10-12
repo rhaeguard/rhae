@@ -1,0 +1,61 @@
+// working Rule 110 implementation
+// to prove turing completeness
+100 GEN_SIZE<
+
+GEN_SIZE> emptyListOfSize curr<
+curr> curr> size 2 - 1 set          // set the penultimate element to 1
+
+GEN_SIZE> emptyListOfSize next<
+
+0 i<
+loop i> GEN_SIZE> < do
+    curr> printRow
+
+    1 j<
+    loop j> GEN_SIZE> -- < do
+        curr> j> --  get a<
+        curr> j>     get b<
+        curr> j> ++  get c<
+
+        // deriving the next value from 3 data points from current gen
+        b> c> ^
+        b> a> ~ & | ix<
+
+        next> j> ix> set
+
+        j> ++ j<
+    end
+
+    curr> next> swap
+    next< curr<
+
+    i> ++ i<
+end
+
+// utility functions //
+func emptyListOfSize do
+    desiredSize< // grab the first parameter
+    list arr<
+
+    0 i<
+    loop i> desiredSize> < do
+        arr> 0 add
+        i> ++ i<
+    end
+
+    arr>
+end
+
+func printRow do
+    array< // grab the first parameter
+    array> size count<
+
+    0 i<
+    loop i> count> < do
+        array> i> get
+        0 == if " " else "*" end
+        print
+        i> ++ i<
+    end
+    "" println
+end

@@ -1,0 +1,32 @@
+// this is hypothetical for now
+// goal is to maybe add raylib later
+"raylib" "r" importAs
+
+	800
+	450
+	"window title"
+r/InitWindow
+
+	60 
+r/SetTargetFPS
+
+loop r/WindowShouldClose not do
+
+	r/BeginDrawing
+
+			r/RAYWHITE 
+		r/ClearBackground
+
+			"Congrats! You created your first window!"
+			190
+			200
+			20
+			r/LIGHTGRAY
+		r/DrawText
+
+	r/EndDrawing
+
+end
+
+r/CloseWindow
+

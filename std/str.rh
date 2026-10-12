@@ -1,0 +1,225 @@
+// func chars do end // ( str -- [int])
+// func str do end // ( [int] -- str)
+
+func toUpper do // ( str -- str )
+	chars input<
+	
+	input> size len<
+
+	0 i<
+	loop i> len> < do 
+		input> i> get ch<
+
+		ch> isLower if
+			ch> 32 - ch<
+		end
+
+		input> i> ch> set
+
+		i> ++ i<
+	end
+	input> str
+end
+
+func toLower do // ( str -- str )
+	chars input<
+	
+	input> size len<
+
+	0 i<
+	loop i> len> < do 
+		input> i> get ch<
+
+		ch> isUpper if
+			ch> 32 + ch<
+		end
+
+		input> i> ch> set
+
+		i> ++ i<
+	end
+	input> str
+end
+
+func toCapital do // ( str -- str )
+	chars input<
+	
+	input> size len<
+
+	// uppercase the first char
+	input> 0 get ch<
+	ch> isLower if
+		ch> 32 - ch<
+	end
+
+	input> 0 ch> set
+
+	// lowercase the rest
+	1 i<
+	loop i> len> < do 
+		input> i> get ch<
+
+		ch> isUpper if
+			ch> 32 + ch<
+		end
+
+		input> i> ch> set
+
+		i> ++ i<
+	end
+	input> str
+end
+
+func trim do // ( str -- str )
+	chars input<
+
+	input> size -- len<
+
+	loop len> 0 >= do
+		input> len> get ch<
+
+		ch> isWhitespace if
+			input> len> pop
+		end
+		len> -- len<
+	end
+
+	input> str
+end
+
+func startsWith do // ( str str -- bool )
+	index 0 ==
+end
+
+func endsWith do // ( str str -- bool )
+	needle<
+	haystack<
+
+	haystack> needle> index out<
+
+	// the index of needle's first occurence + size of needle = full haystack length
+	// because it is supposed to end with it
+			out> 
+			needle> len 
+		+ 
+		haystack> len 
+	==
+end
+
+func contains do // ( str str -- bool )
+	index -1 !=
+end
+
+func index do // ( str str -- int )
+	chars needle<
+	chars haystack<
+
+	needle> size haystack> size > if
+		false
+	else
+		// search for the first char that matches
+		// do a full run of the needle if above is true
+		// return the index of the first match
+
+		needle> 0 get first<
+	
+		needle> size nLen<
+		haystack> size nLen> - hLen<
+		true stillSearching<
+		0 hi<
+		loop hi> hLen> <= stillSearching> and do
+			// check for the first char
+				haystack> hi> get
+				first>
+			== if
+				
+				true runOk<
+				0 ni<
+				loop ni> nLen> < runOk> and do
+					needle> ni> get
+					haystack> ni> hi> + get
+					!= if
+						false runOk<
+					end
+
+					ni> ++ ni<
+				end
+
+				// if runOk is true - exit out of loop and return hi-1
+				runOk> if
+					false stillSearching<
+				end
+			end
+
+			hi> ++ hi<
+		end
+		
+		stillSearching> if
+			-1
+		else
+			hi> --
+		end
+	end
+end
+
+func isEmpty do // ( str -- bool )
+	len 0 ==
+end
+
+func isBlank do // ( str -- bool )
+	trim isEmpty
+end
+
+func isWhitespace do // ( int -- bool )
+	ch<
+			ch> 9 ==
+				ch> 10 ==
+					ch> 12 ==
+					ch> 32 ==
+				or 
+			or 
+		or
+end
+
+func isUpper do // ( int -- bool )
+	ch<
+		ch> 65 >=
+		ch> 90 <=
+	and
+end
+
+func isLower do // ( int -- bool )
+	ch<
+		ch> 97 >=
+		ch> 122 <=
+	and
+end
+
+func len do // ( str -- int )
+	chars size
+end
+
+func substr do // ( str int int -- str )
+	end<
+	start<
+	chars start> end> slice str
+end
+
+func cat do // ( str str -- str )
+	chars src<
+	chars dst<
+
+	src> size len<
+
+	0 i<
+	loop i> len> < do
+			dst>
+				src> i> 
+			get
+		add
+		i> ++ i<
+	end
+
+	dst> str
+end
+

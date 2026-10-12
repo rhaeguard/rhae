@@ -1,0 +1,207 @@
+// general random examples
+"numbers math" println
+1 2 + println
+1 2 - println
+1 2 * println
+1 2 / println
+13 5 % println
+"--numbers cmp--" println
+1 2 < println
+1 2 <= println
+1 2 > println
+1 2 >= println
+1 2 == println
+1 2 != println
+"--string cmp--" println
+"abc" "bcd" < println
+"xyz" "z00" <= println
+"hello" "hola" > println
+"" "a" >= println
+"hello" "hello" == println
+"hello" "hello" != println
+"--bool cmp--" println
+true true == println
+true false == println
+true false == println
+true true != println
+true false != println
+true false != println
+
+"--conditionals--" println
+10
+dup 50 >= if
+"a" println
+else dup 30 <= if
+"b-" println
+
+dup 20 >=
+if "-c"
+else "-d"
+end
+println
+
+end end
+
+10
+dup 15 % 0 == if
+"FizzBuzz"
+else dup 5 % 0 == if
+"Buzz"
+else dup 3 % 0 == if
+"Fizz"
+else
+dup
+end end end
+println
+
+"--loop--" println
+
+0 // sum
+3 // starting from
+loop dup 1000 < do
+    dup                             // [sum, num, num]
+    dup 5 % 0 ==                    // [sum, num, num, true/false]
+    swap                            // [sum, num, true/false, num]
+    3 % 0 ==                        // [sum, num, true/false, true/false]
+    or if                           // [sum, num, true/false]
+        dup                         // [sum, num, num]
+    else
+        0                           // [sum, num, num]
+    end
+    dup2over1 drop drop             // [num, num, sum]
+    +                               // [num, num + sum]
+    swap                            // [sum + num, num]
+    1 +                             // [sum + num, num + 1]
+end
+drop    // drop the number which is 1000
+println   // println the sum
+
+// "--fizzbuzz--" println
+
+// 1 loop dup 20 <= do
+//     dup 15 % 0 == if "FizzBuzz"
+//     else dup 5 % 0 == if "Buzz"
+//     else dup 3 % 0 == if "Fizz"
+//     else dup
+//     end end end
+//     println
+//     1 +
+// end
+
+// "--functions--" println
+
+// unconditional jump needs to proceed func so that
+// we don't execute these during actual run
+
+// 15 sumTill println
+
+3 start<
+0 sum<
+
+loop start> 1000 < do
+start> 5 % 0 ==
+start> 3 % 0 ==
+or if
+start> sum> + sum<
+end
+start> 1 + start<
+end
+
+sum> println
+
+"--funcsfuncs---" println
+
+func sumTill do // int -> int
+    dup 1 + * 2 /
+end
+
+func euler do
+    333 sumTill 3 *
+    199 sumTill 5 *
+    +
+    66 sumTill 15 *
+    -
+    println
+end
+
+euler
+
+"--factorial--" println
+
+func fact do 
+	dup 1 <= if
+        1 *
+    else
+        dup 1 - fact *
+    end
+end
+
+"Factorial of numbers from 1 to 7" println
+1 fact println
+2 fact println
+3 fact println
+4 fact println
+5 fact println
+6 fact println
+7 fact println
+
+"We can chain factorial calls" println
+3 fact fact println
+
+"Fibonacci" println
+func fib do dup 1 <= if
+        dup 0 <= if
+            drop 0
+        else
+            drop 1
+        end
+    else
+        1 - dup 1 - fib swap fib +
+    end
+end
+
+0 fib println
+1 fib println
+2 fib println
+3 fib println
+4 fib println
+5 fib println
+6 fib println
+
+"--collections--" println
+
+list 				// list ( -- L[T])
+	dup 11 add 		// add  ( L[T] T -- )
+	dup 12 add
+	dup 13 add
+	dup 14 add
+	dup 15 add
+	dup 16 add
+	
+	dup 0 get println	// get  (L[T] int -- T?)
+	dup 1 get println
+	dup 2 get println
+	dup 3 get println
+	dup 4 get println
+	dup 5 get println
+
+	dup 3 21 set	// set  (L[T] int T -- )
+	dup 3 get println
+
+	dup size println	// size ( L -- int)
+
+"-->" println
+
+list patterns<
+
+patterns> 0 add
+patterns> 1 add
+patterns> 1 add
+patterns> 1 add
+patterns> 0 add
+patterns> 1 add
+patterns> 1 add
+patterns> 0 add
+
+patterns> println
+

@@ -1,0 +1,23 @@
+func slice do // ( L int int -- L)
+	end<
+	start<
+	xs<
+
+	list out<
+
+	xs> size len<
+	0 i<
+	loop i> len> < do
+
+			i> start> >=
+			i> end> <
+		and if
+			out>
+			xs> i> get
+			add
+		end
+		i> ++ i<
+	end
+
+	out>
+end

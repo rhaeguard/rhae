@@ -1,0 +1,43 @@
+"<--string-->" println
+
+"heLlO" toUpper println
+"heLlO" toLower println
+"heLlO" toCapital println
+"heLlO" len println
+"   heLlO   " trim println
+"   heLlO   " isEmpty println
+"          " isEmpty println
+"" isEmpty println
+"   heLlO   " isBlank println
+"          " isBlank println
+"" isBlank println
+"hello " "world" cat println
+
+"---start/endswith---" println
+"hello" "dest" startsWith println
+"hello" "hell" startsWith println
+"xtest" "dest" endsWith println
+"hello" "ello" endsWith println
+
+// list xs<
+
+// xs> "a" add
+// xs> "b" add
+// xs> "c" add
+// xs> "d" add
+// xs> "e" add
+// xs> "f" add
+// xs> "g" add
+
+// xs> println
+
+// xs> 2 4 slice println
+
+"---substring/contains/index---" println
+"Hello world" 2 7 substr println
+
+"Hello world" "llo" index println
+"Hello world" "llo" contains println
+"Hello world" "xyz" index println
+"Hello world" "xyz" contains println
+

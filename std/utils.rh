@@ -2,4 +2,12 @@
 func ++ do 1 + end
 func -- do 1 - end
 func ~ do 0 == if 1 else 0 end end
+func true do 0 0 == end
+func false do 0 0 != end
+func NL do 10 str end
 func println do print NL print end
+// stack manipulators
+func drop do ignored< end
+func dup do v< v> v> end
+func dup2over1 do v1< v2< v3< v2> v1> v3> v2> v1> end
+func swap do v1< v2< v1> v2> end

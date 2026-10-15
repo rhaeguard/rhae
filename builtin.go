@@ -100,22 +100,27 @@ func strBuiltins() (string, map[string]stackFunc) {
 			s.Push(&listV, LIST)
 		},
 		"str": func(s *stack, ri *RhaeInstructions) {
-			listV, _ := s.Pop()
+			input, _ := s.Pop()
 
-			listV.assertType("str", LIST)
+			input.assertType("str", LIST, NUMERIC)
 
-			listO := listV.v.(*RheaList)
+			listO, isList := input.v.(*RheaList)
 
-			temp := []rune{}
+			var out string
+			if isList {
+				temp := []rune{}
 
-			for i := range listO.size() {
-				ch := asInt(listO.get(i).v)
-				temp = append(temp, rune(ch))
+				for i := range listO.size() {
+					ch := asInt(listO.get(i).v)
+					temp = append(temp, rune(ch))
+				}
+
+				out = string(temp)
+			} else {
+				charCode := rune(asInt(input.v))
+				out = string(charCode)
 			}
-
-			v := string(temp)
-
-			s.Push(v, STRING)
+			s.Push(out, STRING)
 		},
 	}
 
@@ -193,38 +198,11 @@ func initBuiltInProcedures() map[string]stackFunc {
 				fmt.Printf("%v", p.v)
 			}
 		},
-		"true":  func(s *stack, ri *RhaeInstructions) { s.Push(true, BOOL) },
-		"false": func(s *stack, ri *RhaeInstructions) { s.Push(false, BOOL) },
-		"NL":    func(s *stack, ri *RhaeInstructions) { s.Push("\n", STRING) },
-		"dup": func(s *stack, ri *RhaeInstructions) {
-			out, _ := s.Pop()
-			s.Push(out.v, out.t)
-			s.Push(out.v, out.t)
-		},
-		"dup2over1": func(s *stack, ri *RhaeInstructions) {
-			one, _ := s.Pop()
-			two, _ := s.Pop()
-			three, _ := s.Pop()
-			s.Push(two.v, two.t)
-			s.Push(one.v, one.t)
-			s.Push(three.v, three.t)
-			s.Push(two.v, two.t)
-			s.Push(one.v, one.t)
-		},
-		"drop": func(s *stack, ri *RhaeInstructions) {
-			s.Pop()
-		},
-		"swap": func(s *stack, ri *RhaeInstructions) {
-			one, _ := s.Pop()
-			two, _ := s.Pop()
-			s.Push(one.v, one.t)
-			s.Push(two.v, two.t)
-		},
 		"jump0": func(s *stack, ri *RhaeInstructions) {
 			offsetV, _ := s.Pop()
 			resultV, _ := s.Pop()
 
-			offset := int(offsetV.v.(int))
+			offset := asInt(offsetV.v)
 			conditionResult := resultV.v.(bool)
 
 			if conditionResult == false {
@@ -233,7 +211,7 @@ func initBuiltInProcedures() map[string]stackFunc {
 		},
 		"jump": func(s *stack, ri *RhaeInstructions) {
 			offsetV, _ := s.Pop()
-			offset := int(offsetV.v.(int))
+			offset := asInt(offsetV.v)
 			ri.Seek(offset)
 		},
 		"end":  func(s *stack, ri *RhaeInstructions) {},

@@ -41,3 +41,8 @@
 "Hello world" "xyz" index println
 "Hello world" "xyz" contains println
 
+97 str print	// a
+99 str print	// c
+101 str print	// e
+103 str print	// g
+105 str println	// i

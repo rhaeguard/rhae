@@ -190,10 +190,11 @@ type stackValue struct {
 	t stackValueType
 }
 
-func (s stackValue) assertType(prefix, assertedType stackValueType) {
-	if s.t != assertedType {
-		panic(fmt.Sprintf("[%s] expected %s, got %s", prefix, assertedType, s.t))
+func (s stackValue) assertType(prefix string, assertedTypes ...stackValueType) {
+	if slices.Contains(assertedTypes, s.t) {
+		return
 	}
+	panic(fmt.Sprintf("[%s] expected %-v, got %s", prefix, assertedTypes, s.t))
 }
 
 type stack struct {

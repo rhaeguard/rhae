@@ -1,12 +1,16 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"os"
 	"slices"
 	"strconv"
 	"strings"
 )
+
+//go:embed std/*.rh
+var stdDir embed.FS
 
 const (
 	numeric instructionType = "numeric"
@@ -31,23 +35,23 @@ type RhaeInstructions struct {
 }
 
 func getStdModules() string {
-	var fileContents string
+	var fileContents strings.Builder
 
 	for _, filename := range []string{
-		"./std/list.rh",
-		"./std/str.rh",
-		"./std/utils.rh",
+		"std/list.rh",
+		"std/str.rh",
+		"std/utils.rh",
 	} {
-		dat, err := os.ReadFile(filename)
+		dat, err := stdDir.ReadFile(filename)
 
 		if err != nil {
 			panic("could not open file")
 		}
-		fileContents += "\n\n"
-		fileContents += string(dat)
+		fileContents.WriteString("\n\n")
+		fileContents.WriteString(string(dat))
 	}
 
-	return fileContents + "\n"
+	return fileContents.String() + "\n"
 }
 
 func NewRhaeInstructions(fileContents string) RhaeInstructions {
@@ -66,7 +70,7 @@ func NewRhaeInstructions(fileContents string) RhaeInstructions {
 		this.lex(line)
 	}
 
-	this.resolveImmediates()
+	this.preprocess()
 
 	return this
 }
@@ -231,7 +235,7 @@ type offsetL = struct {
 	end   int
 }
 
-func (this *RhaeInstructions) resolveImmediates() {
+func (this *RhaeInstructions) preprocess() {
 	controlStack := NewStack()
 
 	finalIns := []instruction{}
@@ -418,7 +422,13 @@ func (this *RhaeInstructions) resolveImmediates() {
 }
 
 func main() {
-	dat, err := os.ReadFile("./test.rh")
+	var filename string
+	if len(os.Args) > 1 {
+		filename = os.Args[1]
+	} else {
+		fmt.Println("please provide a file to run")
+	}
+	dat, err := os.ReadFile(filename)
 
 	if err != nil {
 		panic("could not open file")

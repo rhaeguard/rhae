@@ -207,3 +207,21 @@ end
 '{"widget":{"debug":"on","window":{"title":"Sample Konfabulator Widget","name":"main_window","width":500,"height":500},"image":{"src":"Images/Sun.png","name":"sun1","hOffset":250,"vOffset":250,"alignment":"center"},"text":{"data":"Click Here","size":36,"style":"bold","name":"text1","hOffset":250,"vOffset":100,"alignment":"center","onMouseUp":"sun1.opacity = (sun1.opacity / 100) * 90;"}}}' toJsonObj println
 :func
 
+"---" println
+dict kvStore<
+
+kvStore> "price" 100 putKv
+kvStore> "name" "blueberry pie" putKv
+kvStore> "aisle" "aisle-7" putKv
+kvStore> "out_of_stock" false putKv
+
+kvStore> println kvStore> sizeDict println
+
+kvStore> "out_of_stock" true putKv
+kvStore> println kvStore> sizeDict println
+
+kvStore> "aisle" getValue println
+kvStore> "aisle" deleteKey
+
+kvStore> println kvStore> sizeDict println
+

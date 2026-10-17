@@ -202,6 +202,8 @@ func (sv stackValue) String() string {
 		return fmt.Sprintf("%t", sv.v)
 	case LIST:
 		return fmt.Sprint(*(sv.v.(*RhaeList)))
+	case DICT:
+		return fmt.Sprint((sv.v.(*RhaeDict)).String())
 	}
 	return fmt.Sprintf("%v", sv.v)
 }
@@ -224,7 +226,7 @@ func NewStack() stack {
 
 func (s *stack) Push(v any, t stackValueType) {
 	switch t {
-	case NUMERIC, STRING, BOOL, REF, LIST:
+	case NUMERIC, STRING, BOOL, REF, LIST, DICT:
 	default:
 		panic(fmt.Sprintf("unknown stack entry type: [%s], value: [%v]", t, v))
 	}

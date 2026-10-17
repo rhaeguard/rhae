@@ -192,7 +192,7 @@ func listBuiltins() (string, map[string]stackFunc) {
 func dictBuiltins() (string, map[string]stackFunc) {
 	procedures := map[string]stackFunc{
 		"dict": func(s *stack, ri *RhaeInstructions) {
-			dictV := RhaeDict{}
+			dictV := NewDict()
 			s.Push(&dictV, DICT)
 		},
 		"putKv": func(s *stack, ri *RhaeInstructions) {

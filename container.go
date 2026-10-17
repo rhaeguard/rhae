@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"slices"
+	"strings"
 )
 
 // Custom containers
@@ -37,6 +38,27 @@ func (rl *RhaeList) pop(pos int) {
 
 type RhaeDict struct {
 	dict map[uint32]stackValue
+	keys map[uint32]stackValue
+}
+
+func NewDict() RhaeDict {
+	return RhaeDict{
+		dict: map[uint32]stackValue{},
+		keys: map[uint32]stackValue{},
+	}
+}
+
+func (rd *RhaeDict) String() string {
+	out := strings.Builder{}
+
+	out.WriteString("{")
+	for hk, v := range rd.dict {
+		k := rd.keys[hk]
+		pair := fmt.Sprintf("{%s: %s}", k.String(), v.String())
+		out.WriteString(pair)
+	}
+	out.WriteString("}")
+	return out.String()
 }
 
 func (rd *RhaeDict) hash(sv *stackValue) uint32 {
@@ -64,6 +86,7 @@ func (rd *RhaeDict) hash(sv *stackValue) uint32 {
 func (rd *RhaeDict) putKv(k stackValue, v stackValue) {
 	hk := rd.hash(&k)
 	rd.dict[hk] = v
+	rd.keys[hk] = k
 }
 
 func (rd *RhaeDict) getValue(k stackValue) stackValue {
@@ -77,6 +100,7 @@ func (rd *RhaeDict) getValue(k stackValue) stackValue {
 func (rd *RhaeDict) deleteKey(k stackValue) {
 	hk := rd.hash(&k)
 	delete(rd.dict, hk)
+	delete(rd.keys, hk)
 }
 
 func (rd *RhaeDict) sizeDict() int {

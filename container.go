@@ -54,7 +54,7 @@ func (rd *RhaeDict) String() string {
 	out.WriteString("{")
 	for hk, v := range rd.dict {
 		k := rd.keys[hk]
-		pair := fmt.Sprintf("{%s: %s}", k.String(), v.String())
+		pair := fmt.Sprintf("%s: %s,", k.String(), v.String())
 		out.WriteString(pair)
 	}
 	out.WriteString("}")

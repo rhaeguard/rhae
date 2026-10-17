@@ -38,6 +38,7 @@ func getStdModules() string {
 	var fileContents strings.Builder
 
 	for _, filename := range []string{
+		"std/json.rh",
 		"std/list.rh",
 		"std/str.rh",
 		"std/utils.rh",

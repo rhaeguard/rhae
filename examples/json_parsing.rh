@@ -1,0 +1,12 @@
+:clear '{"name": true, "name":"strir", "name": 123 , "name": false}' parseJson println
+:clear '{"widget": 1349, "hello": "hi", "isPrime": true}' parseJson println
+:clear '[1, "hello", 3, {"name": true, "name":"strir", "name": 123 , "name": false}, 5] ' parseJson println
+:clear '{"widget":{"debug":"on","window":{"title":"Sample Konfabulator Widget","name":"main_window","width":500,"height":500},"image":{"src":"Images/Sun.png","name":"sun1","hOffset":250,"vOffset":250,"alignment":"center"},"text":{"data":"Click Here","size":36,"style":"bold","name":"text1","hOffset":250,"vOffset":100,"alignment":"center","onMouseUp":"sun1.opacity = (sun1.opacity / 100) * 90;"}}}' parseJson println
+
+:clear '{"widget":{"debug":"on","window":{"title":"Sample Konfabulator Widget","name":"main_window","width":500,"height":500},"image":{"src":"Images/Sun.png","name":"sun1","hOffset":250,"vOffset":250,"alignment":"center"},"text":{"data":"Click Here","size":36,"style":"bold","name":"text1","hOffset":250,"vOffset":100,"alignment":"center","onMouseUp":"sun1.opacity = (sun1.opacity / 100) * 90;"}}}' parseJson kvStore<
+
+kvStore> 
+	"widget" getValue 
+		"text" getValue
+			"onMouseUp" getValue
+println

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"maps"
+	"slices"
 	"strings"
 )
 
@@ -91,7 +92,7 @@ func strBuiltins() (string, map[string]stackFunc) {
 			itemV, _ := s.Pop()
 
 			itemV.assertType("chars", STRING)
-			listV := RheaList{}
+			listV := RhaeList{}
 
 			for _, ch := range itemV.v.(string) {
 				listV.add(stackValue{int(ch), NUMERIC})
@@ -104,7 +105,7 @@ func strBuiltins() (string, map[string]stackFunc) {
 
 			input.assertType("str", LIST, NUMERIC)
 
-			listO, isList := input.v.(*RheaList)
+			listO, isList := input.v.(*RhaeList)
 
 			var out string
 			if isList {
@@ -130,7 +131,7 @@ func strBuiltins() (string, map[string]stackFunc) {
 func listBuiltins() (string, map[string]stackFunc) {
 	procedures := map[string]stackFunc{
 		"list": func(s *stack, ri *RhaeInstructions) {
-			listV := RheaList{}
+			listV := RhaeList{}
 			s.Push(&listV, LIST)
 		},
 		"add": func(s *stack, ri *RhaeInstructions) {
@@ -139,7 +140,7 @@ func listBuiltins() (string, map[string]stackFunc) {
 
 			listV.assertType("add", LIST)
 
-			listO := listV.v.(*RheaList)
+			listO := listV.v.(*RhaeList)
 			listO.add(itemV)
 		},
 		"get": func(s *stack, ri *RhaeInstructions) {
@@ -149,7 +150,7 @@ func listBuiltins() (string, map[string]stackFunc) {
 			listV.assertType("get", LIST)
 			posV.assertType("get", NUMERIC)
 
-			listO := listV.v.(*RheaList)
+			listO := listV.v.(*RhaeList)
 			out := listO.get(int(posV.v.(float32)))
 			s.Push(out.v, out.t)
 		},
@@ -161,7 +162,7 @@ func listBuiltins() (string, map[string]stackFunc) {
 			listV.assertType("set", LIST)
 			posV.assertType("set", NUMERIC)
 
-			listO := listV.v.(*RheaList)
+			listO := listV.v.(*RhaeList)
 			pos := int(posV.v.(float32))
 			listO.set(pos, itemV)
 		},
@@ -170,7 +171,7 @@ func listBuiltins() (string, map[string]stackFunc) {
 
 			listV.assertType("size", LIST)
 
-			listO := listV.v.(*RheaList)
+			listO := listV.v.(*RhaeList)
 			s.Push(listO.size(), NUMERIC)
 		},
 		"pop": func(s *stack, ri *RhaeInstructions) {
@@ -180,7 +181,7 @@ func listBuiltins() (string, map[string]stackFunc) {
 			listV.assertType("pop", LIST)
 			posV.assertType("pop", NUMERIC)
 
-			listO := listV.v.(*RheaList)
+			listO := listV.v.(*RhaeList)
 			listO.pop(asInt(posV.v))
 		},
 	}
@@ -188,15 +189,62 @@ func listBuiltins() (string, map[string]stackFunc) {
 	return "list", procedures
 }
 
+func dictBuiltins() (string, map[string]stackFunc) {
+	procedures := map[string]stackFunc{
+		"dict": func(s *stack, ri *RhaeInstructions) {
+			dictV := RhaeDict{}
+			s.Push(&dictV, DICT)
+		},
+		"putKv": func(s *stack, ri *RhaeInstructions) {
+			// dict k v putKv
+			valueV, _ := s.Pop()
+			keyV, _ := s.Pop()
+			dictV, _ := s.Pop()
+
+			dictV.assertType("putKv", DICT)
+
+			dictO := dictV.v.(*RhaeDict)
+			dictO.putKv(keyV, valueV)
+		},
+		"getValue": func(s *stack, ri *RhaeInstructions) {
+			// dict k getValue
+			keyV, _ := s.Pop()
+			dictV, _ := s.Pop()
+
+			dictV.assertType("getValue", DICT)
+
+			dictO := dictV.v.(*RhaeDict)
+			out := dictO.getValue(keyV)
+			s.Push(out.v, out.t)
+		},
+		"deleteKey": func(s *stack, ri *RhaeInstructions) {
+			// dict k deleteKey
+			keyV, _ := s.Pop()
+			dictV, _ := s.Pop()
+
+			dictV.assertType("deleteKey", DICT)
+
+			dictO := dictV.v.(*RhaeDict)
+			dictO.deleteKey(keyV)
+		},
+		"sizeDict": func(s *stack, ri *RhaeInstructions) {
+			dictV, _ := s.Pop()
+
+			dictV.assertType("sizeDict", DICT)
+
+			dictO := dictV.v.(*RhaeDict)
+			s.Push(dictO.sizeDict(), NUMERIC)
+		},
+	}
+
+	return "dict", procedures
+}
+
 func initBuiltInProcedures() map[string]stackFunc {
 	procedures := map[string]stackFunc{
 		"print": func(s *stack, ri *RhaeInstructions) {
 			p, _ := s.Pop()
-			if p.t == STRING {
-				fmt.Printf("%s", p.v)
-			} else {
-				fmt.Printf("%v", p.v)
-			}
+			fmt.Printf("%s", p.String())
 		},
 		"jump0": func(s *stack, ri *RhaeInstructions) {
 			offsetV, _ := s.Pop()
@@ -216,6 +264,23 @@ func initBuiltInProcedures() map[string]stackFunc {
 		},
 		"end":  func(s *stack, ri *RhaeInstructions) {},
 		"loop": func(s *stack, ri *RhaeInstructions) {},
+		":clear": func(s *stack, ri *RhaeInstructions) {
+			for true {
+				_, ok := s.Pop()
+				if !ok {
+					break
+				}
+			}
+		},
+		":func": func(s *stack, ri *RhaeInstructions) {
+			keys := slices.Collect(maps.Keys(ri.procedures))
+
+			slices.Sort(keys)
+
+			for _, k := range keys {
+				fmt.Printf("[debug] %s\n", k)
+			}
+		},
 	}
 
 	// arithmetics
@@ -255,6 +320,11 @@ func initBuiltInProcedures() map[string]stackFunc {
 	listNamespace, listProcedures := listBuiltins()
 	_ = listNamespace // ignoring namespacing for now
 	maps.Copy(procedures, listProcedures)
+
+	// dict functions
+	dictNamespace, dictProcedures := dictBuiltins()
+	_ = dictNamespace // ignoring namespacing for now
+	maps.Copy(procedures, dictProcedures)
 
 	strNamespace, strProcedures := strBuiltins()
 	_ = strNamespace // ignoring namespacing for now

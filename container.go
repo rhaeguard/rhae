@@ -1,30 +1,86 @@
 package main
 
-import "slices"
+import (
+	"fmt"
+	"hash/fnv"
+	"slices"
+)
 
 // Custom containers
-type RheaList struct {
+type RhaeList struct {
 	elements []stackValue
 }
 
-func (rl *RheaList) add(e stackValue) {
+func (rl RhaeList) String() string {
+	return fmt.Sprint(rl.elements)
+}
+
+func (rl *RhaeList) add(e stackValue) {
 	rl.elements = append(rl.elements, e)
 }
 
-func (rl *RheaList) get(pos int) stackValue {
+func (rl *RhaeList) get(pos int) stackValue {
 	return rl.elements[pos]
 }
 
-func (rl *RheaList) set(pos int, e stackValue) {
+func (rl *RhaeList) set(pos int, e stackValue) {
 	rl.elements[pos] = e
 }
 
-func (rl *RheaList) size() int {
+func (rl *RhaeList) size() int {
 	return len(rl.elements)
 }
 
-func (rl *RheaList) pop(pos int) {
+func (rl *RhaeList) pop(pos int) {
 	rl.elements = slices.Delete(rl.elements, pos, pos+1)
+}
+
+type RhaeDict struct {
+	dict map[uint32]stackValue
+}
+
+func (rd *RhaeDict) hash(sv *stackValue) uint32 {
+	var s string
+	switch sv.t {
+	case NUMERIC, STRING:
+		s = fmt.Sprint(sv.v)
+	case BOOL:
+		s = "0"
+		if sv.v.(bool) {
+			s = "1"
+		}
+	default:
+		panic(fmt.Sprintf("unhashable type: t[%s] - v[%v]", sv.t, sv.v))
+	}
+
+	h := fnv.New32a()
+	_, err := h.Write([]byte(s))
+	if err != nil {
+		panic(fmt.Sprintf("[hash]: %s", err.Error()))
+	}
+	return h.Sum32()
+}
+
+func (rd *RhaeDict) putKv(k stackValue, v stackValue) {
+	hk := rd.hash(&k)
+	rd.dict[hk] = v
+}
+
+func (rd *RhaeDict) getValue(k stackValue) stackValue {
+	hk := rd.hash(&k)
+	if out, ok := rd.dict[hk]; ok {
+		return out
+	}
+	panic(fmt.Sprintf("[dict] key [%s] does not exist", k.String()))
+}
+
+func (rd *RhaeDict) deleteKey(k stackValue) {
+	hk := rd.hash(&k)
+	delete(rd.dict, hk)
+}
+
+func (rd *RhaeDict) sizeDict() int {
+	return len(rd.dict)
 }
 
 // Custom Containers - end

@@ -116,9 +116,10 @@ func (this *RhaeInstructions) split(s string) []string {
 func (this *RhaeInstructions) lex(line string) {
 	for _, t := range this.split(line) {
 		var tt instruction
+		t = strings.TrimSpace(t)
 		if vf, err := strconv.ParseFloat(t, 32); err == nil {
 			tt = instruction{value: float32(vf), itype: numeric}
-		} else if strings.HasPrefix(t, "\"") && strings.HasSuffix(t, "\"") {
+		} else if (strings.HasPrefix(t, "\"") && strings.HasSuffix(t, "\"")) || strings.HasPrefix(t, "'") && strings.HasSuffix(t, "'") {
 			t = t[1 : len(t)-1]
 			tt = instruction{value: t, itype: str}
 		} else {
@@ -180,6 +181,7 @@ const (
 	STRING  stackValueType = "STRING"
 	BOOL    stackValueType = "BOOL"
 	LIST    stackValueType = "LIST"
+	DICT    stackValueType = "DICT"
 	REF     stackValueType = "REF"
 )
 
@@ -188,6 +190,20 @@ type stackValueType = string
 type stackValue struct {
 	v any
 	t stackValueType
+}
+
+func (sv stackValue) String() string {
+	switch sv.t {
+	case NUMERIC:
+		return fmt.Sprint(sv.v)
+	case STRING:
+		return fmt.Sprint(sv.v)
+	case BOOL:
+		return fmt.Sprintf("%t", sv.v)
+	case LIST:
+		return fmt.Sprint(*(sv.v.(*RhaeList)))
+	}
+	return fmt.Sprintf("%v", sv.v)
 }
 
 func (s stackValue) assertType(prefix string, assertedTypes ...stackValueType) {
@@ -210,7 +226,7 @@ func (s *stack) Push(v any, t stackValueType) {
 	switch t {
 	case NUMERIC, STRING, BOOL, REF, LIST:
 	default:
-		panic(fmt.Sprintf("unknown stack entry type: %s", t))
+		panic(fmt.Sprintf("unknown stack entry type: [%s], value: [%v]", t, v))
 	}
 	s.stack = append(s.stack, stackValue{v, t})
 }

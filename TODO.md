@@ -1,0 +1,11 @@
+- [ ] Adding a dict type
+- [ ] Json parsing lib
+    - [ ] module-scoped functions and variables
+    - [ ] selective importing
+    - [ ] assertions and panic
+    - [ ] loop breaking
+    - [ ] short-circuiting?
+- [ ] Better strings
+- [ ] Better chars
+- [ ] Better & more specific types 
+- [ ] Regression/Snapshot tests?

@@ -1,48 +1,209 @@
-"<--string-->" println
+func json:OPEN_CURLY do 123 end
+func json:CLOSE_CURLY do 125 end
+func json:OPEN_BRACKET do 91 end 
+func json:CLOSE_BRACKET do 93 end
+func json:COMMA do 44 end 
+func json:DOUBLE_QUOTE do 34 end 
+func json:COLON do 58 end 
+func json:BACKSLASH do 92 end
 
-"heLlO" toUpper println
-"heLlO" toLower println
-"heLlO" toCapital println
-"heLlO" len println
-"   heLlO   " trim println
-"   heLlO   " isEmpty println
-"          " isEmpty println
-"" isEmpty println
-"   heLlO   " isBlank println
-"          " isBlank println
-"" isBlank println
-"hello " "world" cat println
+func json:ParseBoolean do // ( chars index  -- bool index)
+	pos<
+	payloadChars< 
+	
+	payloadChars> pos> get str "t" == if
+		true
+		pos> 4 +
+	else
+		// false should start with f
+		false
+		pos> 5 +	
+	end
+end
 
-"---start/endswith---" println
-"hello" "dest" startsWith println
-"hello" "hell" startsWith println
-"xtest" "dest" endsWith println
-"hello" "ello" endsWith println
+func json:ParseString do // ( chars index -- str index )
+	pos<
+	payloadChars<
 
-// list xs<
+	// skip the first double quote
+	pos> ++ pos<
+	
+	list out<
+	
+	json:DOUBLE_QUOTE prevCh<
 
-// xs> "a" add
-// xs> "b" add
-// xs> "c" add
-// xs> "d" add
-// xs> "e" add
-// xs> "f" add
-// xs> "g" add
+	loop 
+			payloadChars> pos> get json:DOUBLE_QUOTE ==
+			prevCh> json:BACKSLASH !=
+		and false ==
+	do
+		payloadChars> pos> get ch<
+		out> ch> add
+		pos> ++ pos<
+		ch> prevCh<
+	end
 
-// xs> println
+	out> str 
+	pos> 1 +
+end
 
-// xs> 2 4 slice println
+func json:ParseNumberIsDigit do
+	ch<
+		ch> 48 >=
+		ch> 57 <=
+	and
+end
 
-"---substring/contains/index---" println
-"Hello world" 2 7 substr println
+func json:ParseNumber do // parses to an int
+	pos<
+	payloadChars<
+	
+	list out<
+	payloadChars> size payloadLength<
+	loop 
+		payloadChars> pos> get json:ParseNumberIsDigit
+	do
+		payloadChars> pos> get ch<
+		out> ch> add
+		pos> ++ pos<
+	end
 
-"Hello world" "llo" index println
-"Hello world" "llo" contains println
-"Hello world" "xyz" index println
-"Hello world" "xyz" contains println
+	out> str // TODO: this should not be a string
+	pos>
+end
 
-97 str print	// a
-99 str print	// c
-101 str print	// e
-103 str print	// g
-105 str println	// i
+func json:ParseSingleValue do
+	pos<
+	payloadChars<
+
+	payloadChars> pos> get ch<
+
+	ch> json:DOUBLE_QUOTE == if
+		payloadChars> pos> json:ParseString
+	else ch> str "t" == ch> str "f" == or if
+		payloadChars> pos> json:ParseBoolean
+	else ch> json:ParseNumberIsDigit if
+		payloadChars> pos> json:ParseNumber
+	end end end
+end
+
+func json:ParseReadKey do
+	pos<
+	payloadChars<
+
+	payloadChars> pos> json:SkipWhitespace pos<
+	
+	// expect a double quote
+	payloadChars> pos> json:ParseString pos< key<
+	
+	payloadChars> pos> json:SkipWhitespace pos<
+
+	key> pos>
+end
+
+func json:ParseReadValue do
+	pos<
+	payloadChars<
+
+	payloadChars> pos> get json:OPEN_CURLY == if
+		payloadChars> pos> json:ParseObject
+	else 
+		payloadChars> pos> get json:OPEN_BRACKET == if
+			payloadChars> pos> json:ParseArray
+		else
+			payloadChars> pos> json:ParseSingleValue
+		end
+	end
+end
+
+func json:ParseReadProperty do
+	pos<
+	payloadChars<
+
+	payloadChars> pos> json:ParseReadKey pos< key<
+	payloadChars> pos> json:SkipWhitespace pos<
+	// TODO: expect json:colon and skip
+	pos> ++ pos<
+	payloadChars> pos> json:SkipWhitespace pos<
+
+	payloadChars> pos> json:ParseReadValue pos< value<
+
+	list kv<
+	kv> key> add
+	kv> value> add
+	kv> pos>
+end
+
+func json:ParseObject do
+	pos<
+	payloadChars<
+
+	// TODO: expect open curly
+	pos> ++ pos<
+
+	list kv<
+	payloadChars> pos> json:SkipWhitespace pos<
+	loop payloadChars> pos> get json:CLOSE_CURLY != do
+		payloadChars> pos> json:ParseReadProperty pos< kvPair<
+		payloadChars> pos> json:SkipWhitespace pos<
+
+		kv> kvPair> add
+
+		payloadChars> pos> get json:CLOSE_CURLY != if
+			pos> ++ pos< // TODO: expect json:comma because it separates properties/fields
+		end
+	end
+
+	kv> pos> 1 +
+end
+
+func json:ParseArray do
+	pos<
+	payloadChars<
+
+	// TODO: expect open bracket
+	pos> ++ pos<
+
+	list xs<
+	loop payloadChars> pos> get json:CLOSE_BRACKET != do
+		payloadChars> pos> json:SkipWhitespace pos<
+		payloadChars> pos> json:ParseReadValue pos< value<
+
+		xs> value> add
+
+		payloadChars> pos> get json:CLOSE_BRACKET != if
+			pos> ++ pos< // TODO: expect json:comma because it separates properties/fields
+		end
+	end
+
+	xs> pos> 1 +
+end
+
+func toJsonObj do // ( str -- ? )
+	chars 0 json:ParseReadValue drop // drop the position, keep the value
+end
+
+func json:SkipWhitespace do
+	pos<
+	payloadChars<
+
+	payloadChars> size boundary< // TODO: proper boundary checks needed
+
+	pos> boundary> < ok<
+	loop ok> do
+		payloadChars> pos> get isWhitespace if
+			pos> ++ pos<
+			pos> boundary> < ok<
+		else
+			false ok<
+		end
+	end
+	pos>
+end
+
+:clear '{"name": true, "name":"strir", "name": 123 , "name": false}' toJsonObj println
+:clear '{"widget": 1349, "hello": "hi", "isPrime": true}' toJsonObj println
+:clear '[1, "hello", 3, {"name": true, "name":"strir", "name": 123 , "name": false}, 5] ' toJsonObj println
+'{"widget":{"debug":"on","window":{"title":"Sample Konfabulator Widget","name":"main_window","width":500,"height":500},"image":{"src":"Images/Sun.png","name":"sun1","hOffset":250,"vOffset":250,"alignment":"center"},"text":{"data":"Click Here","size":36,"style":"bold","name":"text1","hOffset":250,"vOffset":100,"alignment":"center","onMouseUp":"sun1.opacity = (sun1.opacity / 100) * 90;"}}}' toJsonObj println
+:func
+

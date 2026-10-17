@@ -1,0 +1,138 @@
+func qsort:partition:swap do
+	b<
+	a<
+	arr<
+
+	arr> a> get ea<
+	arr> b> get eb<
+	
+	arr> a> eb> set
+	arr> b> ea> set
+end
+
+func qsort:partition do
+	hi<
+	lo<
+	arr<
+
+	arr> hi> get pivot<
+
+	lo> i<
+	lo> j<
+	loop j> hi> -- <= do
+			arr> j> get
+			pivot>
+		<= if
+			arr> i> j> qsort:partition:swap
+			i> ++ i<
+		end
+
+		j> ++ j<
+	end
+
+	arr> i> hi> qsort:partition:swap
+	i>
+end
+
+func qsort do // (arr start end_inclusive -- arr_sorted)
+	hi<
+	lo<
+	arr<
+
+		lo> hi> >=
+		lo> 0 <
+	or if
+		// do nothing
+	else 
+		lo> hi> < if
+			arr> lo> hi> qsort:partition p<
+			arr> lo> p> -- qsort
+			arr> p> ++ hi> qsort
+		end
+	end
+	arr>
+end
+
+func msort:merge do
+	hi<
+	mid<
+	lo<
+	arr<
+
+	list left<
+	list right<
+	
+	mid> lo> - ++ n1<
+	0 i<
+	loop i> n1> < do
+			left>
+				arr> 
+				lo> i> + 
+			get 
+		add
+		i> ++ i<
+	end
+
+	hi> mid> - n2<
+	0 i<
+	loop i> n2> < do
+			right>
+				arr> 
+				mid> i> + ++ 
+			get 
+		add
+		i> ++ i<
+	end
+
+	0 i<
+	0 j<
+	lo> k<
+
+	loop 
+		i> n1> <
+		j> n2> < and
+	do
+
+		left> i> get right> j> get <= if
+			arr> k> left> i> get set
+			i> ++ i<
+		else
+			arr> k> right> j> get set
+			j> ++ j<
+		end
+		k> ++ k<
+	end
+
+	loop 
+		i> n1> <
+	do
+		arr> k> left> i> get set
+		i> ++ i<
+		k> ++ k<
+	end
+
+	loop 
+		j> n2> <
+	do
+		arr> k> right> j> get set
+		j> ++ j<
+		k> ++ k<
+	end
+
+end
+
+func msort do
+	hi<
+	lo<
+	arr<
+
+	hi> lo> - 0 > if
+		hi> lo> + 2 / floor mid<
+
+		arr> lo> mid> 		msort
+		arr> mid> ++ hi> 	msort
+		arr> lo> mid> hi> 	msort:merge
+	end
+
+	arr>
+end

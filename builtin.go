@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"maps"
+	"math"
 	"slices"
 	"strings"
 )
@@ -81,7 +82,14 @@ func comparisonF(
 
 			s.Push(res, BOOL)
 		} else {
-			panic(fmt.Sprintf("invalid comparison of 2 different types [%s, %s]", a.t, b.t))
+			panic(
+				fmt.Sprintf("invalid comparison of 2 different types [%s, %s] - (%s, %s)",
+					a.t,
+					b.t,
+					a.String(),
+					b.String(),
+				),
+			)
 		}
 	}
 }
@@ -261,6 +269,12 @@ func initBuiltInProcedures() map[string]stackFunc {
 			offsetV, _ := s.Pop()
 			offset := asInt(offsetV.v)
 			ri.Seek(offset)
+		},
+		"floor": func(s *stack, ri *RhaeInstructions) {
+			itemV, _ := s.Pop()
+			value := asFloat(itemV.v)
+			value = float32(math.Floor(float64(value)))
+			s.Push(value, NUMERIC)
 		},
 		"end":  func(s *stack, ri *RhaeInstructions) {},
 		"loop": func(s *stack, ri *RhaeInstructions) {},

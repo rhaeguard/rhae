@@ -40,6 +40,7 @@ func getStdModules() string {
 	for _, filename := range []string{
 		"std/json.rh",
 		"std/list.rh",
+		"std/sort.rh",
 		"std/str.rh",
 		"std/utils.rh",
 	} {

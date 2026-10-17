@@ -1,0 +1,52 @@
+list unsorted<
+
+unsorted> 17 add
+unsorted> 61 add
+unsorted> 56 add
+unsorted> 73 add
+unsorted> 62 add
+unsorted> 39 add
+unsorted> 33 add
+unsorted> 54 add
+unsorted> 30 add
+unsorted> 12 add
+unsorted> 21 add
+unsorted> 31 add
+unsorted> 98 add
+unsorted> 20 add
+unsorted> 67 add
+unsorted> 41 add
+unsorted> 95 add
+
+unsorted> println
+
+"--sorted|" println
+
+unsorted> 0 unsorted> size -- qsort print "|" println
+
+"a quick brown fox jumps over lazy dog" chars unsorted<
+unsorted> 0 unsorted> size -- qsort str print "|" println
+
+"a quick brown fox jumps over lazy dog" chars unsorted<
+:clear unsorted> 0 unsorted> size -- msort str print ">" println
+
+list dummy<
+dummy> 17 add
+dummy> 61 add
+dummy> 56 add
+dummy> 73 add
+dummy> 62 add
+dummy> 39 add
+dummy> 33 add
+dummy> 54 add
+dummy> 30 add
+dummy> 12 add
+dummy> 21 add
+dummy> 31 add
+dummy> 98 add
+dummy> 20 add
+dummy> 67 add
+dummy> 41 add
+dummy> 95 add
+
+:clear dummy> 0 8 msort print ">" println // sorting a subsection

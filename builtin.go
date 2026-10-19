@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"math"
+	"os"
 	"slices"
 	"strings"
 )
@@ -248,6 +249,60 @@ func dictBuiltins() (string, map[string]stackFunc) {
 	return "dict", procedures
 }
 
+func ioBuiltins() (string, map[string]stackFunc) {
+	procedures := map[string]stackFunc{
+		"stdout": func(s *stack, ri *RhaeInstructions) {
+			file := RhaeFileFrom(os.Stdout)
+			s.Push(file, FILE)
+		},
+		"stderr": func(s *stack, ri *RhaeInstructions) {
+			file := RhaeFileFrom(os.Stderr)
+			s.Push(file, FILE)
+		},
+		"stdin": func(s *stack, ri *RhaeInstructions) {
+			file := RhaeFileFrom(os.Stdin)
+			s.Push(file, FILE)
+		},
+		"open": func(s *stack, ri *RhaeInstructions) {
+			stringV, _ := s.Pop()
+
+			stringV.assertType("open", STRING)
+
+			file := NewRhaeFile(stringV.v.(string))
+			s.Push(file, FILE)
+		},
+		"write": func(s *stack, ri *RhaeInstructions) {
+			stringV, _ := s.Pop()
+			fileV, _ := s.Pop()
+
+			stringV.assertType("write", STRING)
+			fileV.assertType("write", FILE)
+
+			fileO := fileV.v.(*RhaeFile)
+			fileO.write(stringV.v.(string))
+		},
+		"readline": func(s *stack, ri *RhaeInstructions) {
+			fileV, _ := s.Pop()
+
+			fileV.assertType("readline", FILE)
+
+			fileO := fileV.v.(*RhaeFile)
+			outS := fileO.readline()
+			s.Push(outS, STRING)
+		},
+		"close": func(s *stack, ri *RhaeInstructions) {
+			fileV, _ := s.Pop()
+
+			fileV.assertType("close", FILE)
+
+			fileO := fileV.v.(*RhaeFile)
+			fileO.close()
+		},
+	}
+
+	return "io", procedures
+}
+
 func initBuiltInProcedures() map[string]stackFunc {
 	procedures := map[string]stackFunc{
 		"print": func(s *stack, ri *RhaeInstructions) {
@@ -343,6 +398,10 @@ func initBuiltInProcedures() map[string]stackFunc {
 	strNamespace, strProcedures := strBuiltins()
 	_ = strNamespace // ignoring namespacing for now
 	maps.Copy(procedures, strProcedures)
+
+	ioNamespace, ioProcedures := ioBuiltins()
+	_ = ioNamespace // ignoring namespacing for now
+	maps.Copy(procedures, ioProcedures)
 
 	return procedures
 }

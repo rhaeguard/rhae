@@ -38,6 +38,7 @@ func getStdModules() string {
 	var fileContents strings.Builder
 
 	for _, filename := range []string{
+		"std/io.rh",
 		"std/json.rh",
 		"std/list.rh",
 		"std/sort.rh",
@@ -184,6 +185,7 @@ const (
 	BOOL    stackValueType = "BOOL"
 	LIST    stackValueType = "LIST"
 	DICT    stackValueType = "DICT"
+	FILE    stackValueType = "FILE"
 	REF     stackValueType = "REF"
 )
 
@@ -206,6 +208,8 @@ func (sv stackValue) String() string {
 		return fmt.Sprint(*(sv.v.(*RhaeList)))
 	case DICT:
 		return fmt.Sprint((sv.v.(*RhaeDict)).String())
+	case FILE:
+		return fmt.Sprint((sv.v.(*RhaeFile)).String())
 	}
 	return fmt.Sprintf("%v", sv.v)
 }
@@ -228,7 +232,7 @@ func NewStack() stack {
 
 func (s *stack) Push(v any, t stackValueType) {
 	switch t {
-	case NUMERIC, STRING, BOOL, REF, LIST, DICT:
+	case NUMERIC, STRING, BOOL, REF, LIST, DICT, FILE:
 	default:
 		panic(fmt.Sprintf("unknown stack entry type: [%s], value: [%v]", t, v))
 	}

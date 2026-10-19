@@ -1,0 +1,18 @@
+stdout "hello world" NL cat write
+stdout "this is a random message" NL cat write
+stdout "why are we doing this again?" NL cat write
+
+stdin sin<
+stdout "name: " write sin> readline name<
+stdout "age: " write sin> readline age<
+stdout "fave color: " write sin> readline color<
+
+"dummy.txt" open fd<
+fd> "hello world" NL cat write
+fd> "this is a random message" NL cat write
+fd> "why are we doing this again?" NL cat write
+fd> "my name is " name> cat write
+fd> ". I am " age> cat write
+fd> ". I like " color> cat write 
+fd> NL write
+fd> close

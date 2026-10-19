@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"hash/fnv"
+	"os"
 	"slices"
 	"strings"
 )
@@ -105,6 +107,50 @@ func (rd *RhaeDict) deleteKey(k stackValue) {
 
 func (rd *RhaeDict) sizeDict() int {
 	return len(rd.dict)
+}
+
+type RhaeFile struct {
+	file    *os.File
+	scanner *bufio.Scanner
+}
+
+func NewRhaeFile(filepath string) *RhaeFile {
+	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		panic(fmt.Sprintf("opening a file failed with error: %s", err.Error()))
+	}
+	scanner := bufio.NewScanner(file) // ScanLines is the default split function
+	return &RhaeFile{
+		file:    file,
+		scanner: scanner,
+	}
+}
+
+func RhaeFileFrom(file *os.File) *RhaeFile {
+	return &RhaeFile{file, bufio.NewScanner(file)}
+}
+
+func (rd *RhaeFile) String() string {
+	return "|just a file|"
+}
+
+func (rf *RhaeFile) readline() string {
+	ok := rf.scanner.Scan()
+	if ok {
+		return rf.scanner.Text()
+	}
+	return ""
+}
+
+func (rf *RhaeFile) write(str string) {
+	_, err := rf.file.WriteString(str)
+	if err != nil {
+		panic(fmt.Sprintf("writing to a file failed with error: %s", err.Error()))
+	}
+}
+
+func (rf *RhaeFile) close() {
+	_ = rf.file.Close()
 }
 
 // Custom Containers - end

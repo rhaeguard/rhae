@@ -303,6 +303,140 @@ func ioBuiltins() (string, map[string]stackFunc) {
 	return "io", procedures
 }
 
+func raylibBindings() (string, map[string]stackFunc) {
+	getRaylib := func(ri *RhaeInstructions) *Raylib {
+		return ri.extern["raylib"].(*Raylib)
+	}
+
+	procedures := map[string]stackFunc{
+		"raylib:InitWindow": func(s *stack, ri *RhaeInstructions) {
+			titleV, _ := s.Pop()
+			heightV, _ := s.Pop()
+			widthV, _ := s.Pop()
+
+			titleV.assertType("raylib", STRING)
+			heightV.assertType("raylib", NUMERIC)
+			widthV.assertType("raylib", NUMERIC)
+
+			title := titleV.v.(string)
+			width := asInt(widthV.v)
+			height := asInt(heightV.v)
+
+			getRaylib(ri).InitWindow(int32(width), int32(height), title)
+		},
+		"raylib:SetTargetFPS": func(s *stack, ri *RhaeInstructions) {
+			fpsV, _ := s.Pop()
+			fpsV.assertType("raylib", NUMERIC)
+			fps := asInt(fpsV.v)
+			getRaylib(ri).SetTargetFPS(int32(fps))
+		},
+		"raylib:WindowShouldClose": func(s *stack, ri *RhaeInstructions) {
+			out := getRaylib(ri).WindowShouldClose()
+			s.Push(out, BOOL)
+		},
+		"raylib:BeginDrawing": func(s *stack, ri *RhaeInstructions) {
+			getRaylib(ri).BeginDrawing()
+		},
+		"raylib:RAYWHITE": func(s *stack, ri *RhaeInstructions) {
+			s.Push("#f5f5f5ff", STRING)
+		},
+		"raylib:LIGHTGRAY": func(s *stack, ri *RhaeInstructions) {
+			s.Push("#c8c8c8ff", STRING)
+		},
+		"raylib:ClearBackground": func(s *stack, ri *RhaeInstructions) {
+			colorV, _ := s.Pop()
+			colorV.assertType("raylib", STRING)
+			col := hexToRgba(colorV.v.(string))
+			getRaylib(ri).ClearBackground(col)
+		},
+		"raylib:DrawText": func(s *stack, ri *RhaeInstructions) {
+			colorV, _ := s.Pop()
+			fontSizeV, _ := s.Pop()
+			yAxisV, _ := s.Pop()
+			xAxisV, _ := s.Pop()
+			textV, _ := s.Pop()
+
+			colorV.assertType("raylib", STRING)
+			textV.assertType("raylib", STRING)
+			fontSizeV.assertType("raylib", NUMERIC)
+			yAxisV.assertType("raylib", NUMERIC)
+			xAxisV.assertType("raylib", NUMERIC)
+
+			col := hexToRgba(colorV.v.(string))
+			text := textV.v.(string)
+			fontSize := asInt(fontSizeV.v)
+			y := asInt(yAxisV.v)
+			x := asInt(xAxisV.v)
+
+			getRaylib(ri).DrawText(
+				text,
+				int32(x),
+				int32(y),
+				int32(fontSize),
+				col,
+			)
+		},
+		"raylib:EndDrawing": func(s *stack, ri *RhaeInstructions) {
+			getRaylib(ri).EndDrawing()
+		},
+		"raylib:CloseWindow": func(s *stack, ri *RhaeInstructions) {
+			getRaylib(ri).CloseWindow()
+		},
+		"raylib:IsKeyDown": func(s *stack, ri *RhaeInstructions) {
+			keyCodeV, _ := s.Pop()
+			keyCodeV.assertType("raylib", NUMERIC)
+			keyCode := asInt(keyCodeV.v)
+			out := getRaylib(ri).IsKeyDown(int32(keyCode))
+			s.Push(out, BOOL)
+		},
+		"raylib:CheckCollisionRecs": func(s *stack, ri *RhaeInstructions) {
+			rec2V, _ := s.Pop()
+			rec1V, _ := s.Pop()
+			rec1V.assertType("raylib", OBJECT)
+			rec2V.assertType("raylib", OBJECT)
+
+			r1 := rec1V.v.(*RaylibRect)
+			r2 := rec2V.v.(*RaylibRect)
+
+			out := getRaylib(ri).CheckCollisionRecs(*r1, *r2)
+			s.Push(out, BOOL)
+		},
+		"raylib:DrawRectangleRec": func(s *stack, ri *RhaeInstructions) {
+			colorV, _ := s.Pop()
+			recV, _ := s.Pop()
+			recV.assertType("raylib", OBJECT)
+			colorV.assertType("raylib", STRING)
+
+			col := hexToRgba(colorV.v.(string))
+			r := recV.v.(*RaylibRect)
+
+			getRaylib(ri).DrawRectangleRec(*r, col)
+		},
+		"raylib:NewRectangle": func(s *stack, ri *RhaeInstructions) {
+			hV, _ := s.Pop()
+			wV, _ := s.Pop()
+			yV, _ := s.Pop()
+			xV, _ := s.Pop()
+
+			xV.assertType("raylib", NUMERIC)
+			yV.assertType("raylib", NUMERIC)
+			wV.assertType("raylib", NUMERIC)
+			hV.assertType("raylib", NUMERIC)
+
+			out := RaylibRect{
+				x: asFloat(xV.v),
+				y: asFloat(yV.v),
+				w: asFloat(wV.v),
+				h: asFloat(hV.v),
+			}
+
+			s.Push(&out, OBJECT)
+		},
+	}
+
+	return "raylib", procedures
+}
+
 func initBuiltInProcedures() map[string]stackFunc {
 	procedures := map[string]stackFunc{
 		"print": func(s *stack, ri *RhaeInstructions) {
@@ -402,6 +536,10 @@ func initBuiltInProcedures() map[string]stackFunc {
 	ioNamespace, ioProcedures := ioBuiltins()
 	_ = ioNamespace // ignoring namespacing for now
 	maps.Copy(procedures, ioProcedures)
+
+	raylibNs, raylibProcedures := raylibBindings()
+	_ = raylibNs // ignoring namespacing for now
+	maps.Copy(procedures, raylibProcedures)
 
 	return procedures
 }

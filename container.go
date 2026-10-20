@@ -4,9 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"hash/fnv"
+	"image/color"
 	"os"
 	"slices"
 	"strings"
+	"syscall"
+
+	"github.com/ebitengine/purego"
 )
 
 // Custom containers
@@ -154,3 +158,59 @@ func (rf *RhaeFile) close() {
 }
 
 // Custom Containers - end
+
+// externals
+type RaylibRect = struct {
+	x, y, w, h float32
+}
+type Raylib struct {
+	raylibHandle uintptr
+	// funcs
+	InitWindow        func(width int32, height int32, title string)
+	CloseWindow       func()
+	SetTargetFPS      func(fps int32)
+	WindowShouldClose func() bool
+	BeginDrawing      func()
+	ClearBackground   func(color color.RGBA)
+	DrawText          func(text string, posX int32, posY int32, fontSize int32, color color.RGBA)
+	EndDrawing        func()
+	// new
+	IsKeyDown          func(key int32) bool
+	CheckCollisionRecs func(rec1 RaylibRect, rec2 RaylibRect) bool
+	DrawRectangleRec   func(rec RaylibRect, color color.RGBA)
+}
+
+func (rd *Raylib) String() string {
+	return "|just raylib|"
+}
+
+// this is Windows specific
+func openLibrary(name string) (uintptr, error) {
+	handle, err := syscall.LoadLibrary(name)
+	return uintptr(handle), err
+}
+
+func RaylibInit() *Raylib {
+	raylibHandle, err := openLibrary("./lib/raylib.dll")
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var raylib = Raylib{}
+	raylib.raylibHandle = raylibHandle
+
+	purego.RegisterLibFunc(&raylib.InitWindow, raylibHandle, "InitWindow")
+	purego.RegisterLibFunc(&raylib.CloseWindow, raylibHandle, "CloseWindow")
+	purego.RegisterLibFunc(&raylib.SetTargetFPS, raylibHandle, "SetTargetFPS")
+	purego.RegisterLibFunc(&raylib.WindowShouldClose, raylibHandle, "WindowShouldClose")
+	purego.RegisterLibFunc(&raylib.BeginDrawing, raylibHandle, "BeginDrawing")
+	purego.RegisterLibFunc(&raylib.ClearBackground, raylibHandle, "ClearBackground")
+	purego.RegisterLibFunc(&raylib.EndDrawing, raylibHandle, "EndDrawing")
+	purego.RegisterLibFunc(&raylib.CheckCollisionRecs, raylibHandle, "CheckCollisionRecs")
+	purego.RegisterLibFunc(&raylib.DrawText, raylibHandle, "DrawText")
+	purego.RegisterLibFunc(&raylib.DrawRectangleRec, raylibHandle, "DrawRectangleRec")
+	purego.RegisterLibFunc(&raylib.IsKeyDown, raylibHandle, "IsKeyDown")
+
+	return &raylib
+}

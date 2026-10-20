@@ -1,32 +1,85 @@
-// this is hypothetical for now
-// goal is to maybe add raylib later
-"raylib" "r" importAs
-
+// PING PONG
 	800
 	450
-	"window title"
-r/InitWindow
+	"Ping Pong"
+raylib:InitWindow
 
-	60 
-r/SetTargetFPS
+	60
+raylib:SetTargetFPS
 
-loop r/WindowShouldClose not do
+175 leftY<
+175 rightY<
+400 ballX<
+225 ballY<
+5 dx<
+3 dy<
 
-	r/BeginDrawing
+loop raylib:WindowShouldClose false == do
 
-			r/RAYWHITE 
-		r/ClearBackground
+	raylib:KeyW raylib:IsKeyDown if leftY> 5 - leftY< end
+	raylib:KeyS raylib:IsKeyDown if leftY> 5 + leftY< end
+	raylib:KeyUp raylib:IsKeyDown if rightY> 5 - rightY< end
+	raylib:KeyDown raylib:IsKeyDown if rightY> 5 + rightY< end
 
-			"Congrats! You created your first window!"
-			190
-			200
-			20
-			r/LIGHTGRAY
-		r/DrawText
+	ballX> dx> + ballX<
+	ballY> dy> + ballY<
 
-	r/EndDrawing
+		ballY> 0 <
+		ballY> 440 >
+	or if dy> -1 * dy< end
 
+		20
+		leftY>
+		10
+		80
+	raylib:NewRectangle left<
+
+		770
+		rightY>
+		10
+		80
+	raylib:NewRectangle right<
+
+		ballX>
+		ballY>
+		10
+		10
+	raylib:NewRectangle ball<
+
+			ball>
+			left>
+		raylib:CheckCollisionRecs
+		dx> 0 <
+	and if dx> -1 * dx<  end
+
+				ball>
+			right>
+		raylib:CheckCollisionRecs
+		dx> 0 >
+	and if dx> -1 * dx<  end
+
+		ballX> 0 <
+		ballX> 800 >
+	or if 
+		200 ballX<
+		225 ballY<
+		dx> -1 * dx<
+	end
+
+	raylib:BeginDrawing
+			"#000000ff"
+		raylib:ClearBackground
+
+		left> "#ffffffff"
+	raylib:DrawRectangleRec
+
+		right> "#ffffffff"
+	raylib:DrawRectangleRec
+
+		ball> "#ffffffff"
+	raylib:DrawRectangleRec
+
+	raylib:EndDrawing
 end
 
-r/CloseWindow
-
+raylib:CloseWindow

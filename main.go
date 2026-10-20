@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"os"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -32,12 +33,14 @@ type RhaeInstructions struct {
 	ptr        int
 	ins        []instruction
 	procedures map[string]stackFunc
+	extern     map[string]any
 }
 
 func getStdModules() string {
 	var fileContents strings.Builder
 
 	for _, filename := range []string{
+		"std/raylib.rh",
 		"std/io.rh",
 		"std/json.rh",
 		"std/list.rh",
@@ -58,7 +61,12 @@ func getStdModules() string {
 }
 
 func NewRhaeInstructions(fileContents string) RhaeInstructions {
-	this := RhaeInstructions{ptr: -1, ins: []instruction{}, procedures: initBuiltInProcedures()}
+	this := RhaeInstructions{
+		ptr:        -1,
+		ins:        []instruction{},
+		procedures: initBuiltInProcedures(),
+		extern:     map[string]any{},
+	}
 	ix := -1
 	for line := range strings.Lines(getStdModules() + fileContents) {
 		ix += 1
@@ -179,6 +187,10 @@ func (this *RhaeInstructions) Eval(stack *stack) {
 	}
 }
 
+func (this *RhaeInstructions) AddExternalLibrary(name string, ref any) {
+	this.extern[name] = ref
+}
+
 const (
 	NUMERIC stackValueType = "NUMERIC"
 	STRING  stackValueType = "STRING"
@@ -186,6 +198,7 @@ const (
 	LIST    stackValueType = "LIST"
 	DICT    stackValueType = "DICT"
 	FILE    stackValueType = "FILE"
+	OBJECT  stackValueType = "OBJECT"
 	REF     stackValueType = "REF"
 )
 
@@ -210,6 +223,8 @@ func (sv stackValue) String() string {
 		return fmt.Sprint((sv.v.(*RhaeDict)).String())
 	case FILE:
 		return fmt.Sprint((sv.v.(*RhaeFile)).String())
+	case OBJECT:
+		return fmt.Sprint((sv.v.(*Raylib)).String())
 	}
 	return fmt.Sprintf("%v", sv.v)
 }
@@ -232,7 +247,7 @@ func NewStack() stack {
 
 func (s *stack) Push(v any, t stackValueType) {
 	switch t {
-	case NUMERIC, STRING, BOOL, REF, LIST, DICT, FILE:
+	case NUMERIC, STRING, BOOL, REF, LIST, DICT, FILE, OBJECT:
 	default:
 		panic(fmt.Sprintf("unknown stack entry type: [%s], value: [%v]", t, v))
 	}
@@ -447,6 +462,8 @@ func (this *RhaeInstructions) preprocess() {
 }
 
 func main() {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	var filename string
 	if len(os.Args) > 1 {
 		filename = os.Args[1]
@@ -462,6 +479,7 @@ func main() {
 	fileContents := string(dat)
 
 	rhInstructions := NewRhaeInstructions(fileContents)
+	rhInstructions.AddExternalLibrary("raylib", RaylibInit())
 
 	for false {
 		ix, ok, ins := rhInstructions.Next()

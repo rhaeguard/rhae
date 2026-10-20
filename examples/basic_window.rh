@@ -16,10 +16,10 @@ raylib:SetTargetFPS
 
 loop raylib:WindowShouldClose false == do
 
-	raylib:KeyW raylib:IsKeyDown if leftY> 5 - leftY< end
-	raylib:KeyS raylib:IsKeyDown if leftY> 5 + leftY< end
-	raylib:KeyUp raylib:IsKeyDown if rightY> 5 - rightY< end
-	raylib:KeyDown raylib:IsKeyDown if rightY> 5 + rightY< end
+	raylib:KeyW 	raylib:IsKeyDown if leftY> 5 - leftY< end
+	raylib:KeyS 	raylib:IsKeyDown if leftY> 5 + leftY< end
+	raylib:KeyUp 	raylib:IsKeyDown if rightY> 5 - rightY< end
+	raylib:KeyDown 	raylib:IsKeyDown if rightY> 5 + rightY< end
 
 	ballX> dx> + ballX<
 	ballY> dy> + ballY<
@@ -67,16 +67,16 @@ loop raylib:WindowShouldClose false == do
 	end
 
 	raylib:BeginDrawing
-			"#000000ff"
+			raylib:Black
 		raylib:ClearBackground
 
-		left> "#ffffffff"
+		left> raylib:White
 	raylib:DrawRectangleRec
 
-		right> "#ffffffff"
+		right> raylib:White
 	raylib:DrawRectangleRec
 
-		ball> "#ffffffff"
+		ball> raylib:White
 	raylib:DrawRectangleRec
 
 	raylib:EndDrawing

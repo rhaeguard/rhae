@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"maps"
 	"os"
 	"runtime"
 	"slices"
@@ -39,8 +40,8 @@ type RhaeInstructions struct {
 func getStdModules() string {
 	var fileContents strings.Builder
 
+	// TODO: dynamic import? raylib not standard lib
 	for _, filename := range []string{
-		"std/raylib.rh",
 		"std/io.rh",
 		"std/json.rh",
 		"std/list.rh",
@@ -60,15 +61,14 @@ func getStdModules() string {
 	return fileContents.String() + "\n"
 }
 
-func NewRhaeInstructions(fileContents string) RhaeInstructions {
+func ParseProcessModules(fileContents string) RhaeInstructions {
 	this := RhaeInstructions{
-		ptr:        -1,
 		ins:        []instruction{},
-		procedures: initBuiltInProcedures(),
 		extern:     map[string]any{},
+		procedures: map[string]stackFunc{},
 	}
 	ix := -1
-	for line := range strings.Lines(getStdModules() + fileContents) {
+	for line := range strings.Lines(fileContents) {
 		ix += 1
 		b, _, found := strings.Cut(line, "//")
 		if found {
@@ -84,6 +84,59 @@ func NewRhaeInstructions(fileContents string) RhaeInstructions {
 	this.preprocess()
 
 	return this
+}
+
+func LoadModule(moduleName string) (any, *RhaeInstructions) {
+	var ref any
+	var ins RhaeInstructions
+	if moduleName == "external/raylib" {
+		ref = RaylibInit()
+		ins = ParseProcessModules(GetFileContents("./external/raylib.rh"))
+	} else {
+		panic(fmt.Sprintf("module '%s' does not exist\n", moduleName))
+	}
+	return ref, &ins
+}
+
+func NewRhaeInstructions(fileContents string) RhaeInstructions {
+	/* Create one interpretable module/instruction set. The module would be like this:
+
+	[standard modules all included here]
+	[imported vendor modules all included here; --minus the import statements]
+	[imported local modules all included here; --minus the import statements]
+	[main code block; --minus the import statements]
+	*/
+	stdModules := ParseProcessModules(getStdModules())
+	mainModule := ParseProcessModules(fileContents)
+
+	modulesToBeIncluded := []string{}
+	modulesToBeIncluded = append(modulesToBeIncluded, slices.Collect(maps.Keys(mainModule.extern))...)
+
+	finalInstructions := []instruction{}
+	finalInstructions = append(finalInstructions, stdModules.ins...)
+
+	extern := map[string]any{}
+	procedures := initBuiltInProcedures()
+	maps.Insert(procedures, maps.All(stdModules.procedures))
+
+	for _, moduleName := range modulesToBeIncluded {
+		// load the module here
+		// handle can be nil, but that's fine
+		handle, module := LoadModule(moduleName)
+		extern[moduleName] = handle
+		finalInstructions = append(finalInstructions, module.ins...)
+		maps.Insert(procedures, maps.All(module.procedures))
+	}
+
+	finalInstructions = append(finalInstructions, mainModule.ins...)
+	maps.Insert(procedures, maps.All(mainModule.procedures))
+
+	return RhaeInstructions{
+		ptr:        -1,
+		ins:        finalInstructions,
+		procedures: procedures,
+		extern:     extern,
+	}
 }
 
 // returns index, success, instruction
@@ -187,8 +240,8 @@ func (this *RhaeInstructions) Eval(stack *stack) {
 	}
 }
 
-func (this *RhaeInstructions) AddExternalLibrary(name string, ref any) {
-	this.extern[name] = ref
+func (this *RhaeInstructions) AddExternalLibrary(name string) {
+	this.extern[name] = nil
 }
 
 const (
@@ -282,6 +335,7 @@ func (this *RhaeInstructions) preprocess() {
 
 	insPos := func() int { return len(finalIns) - 1 }
 
+	this.ResetPtr()
 	for {
 		_, ok, ins := this.Next()
 
@@ -293,6 +347,13 @@ func (this *RhaeInstructions) preprocess() {
 			fn := ins.value.(string)
 
 			switch fn {
+			case "import":
+				moduleToBeIncluded := finalIns[len(finalIns)-1]
+				if moduleToBeIncluded.itype != str {
+					panic(`import function needs a module name: e.g., "module_name" import`)
+				}
+				this.AddExternalLibrary(moduleToBeIncluded.value.(string))
+				finalIns = finalIns[0 : len(finalIns)-1] // remove the imported module name string
 			case "if":
 				var offset offsetT
 				finalIns = append(finalIns,
@@ -470,16 +531,9 @@ func main() {
 	} else {
 		fmt.Println("please provide a file to run")
 	}
-	dat, err := os.ReadFile(filename)
 
-	if err != nil {
-		panic("could not open file")
-	}
-
-	fileContents := string(dat)
-
+	fileContents := GetFileContents(filename)
 	rhInstructions := NewRhaeInstructions(fileContents)
-	rhInstructions.AddExternalLibrary("raylib", RaylibInit())
 
 	for false {
 		ix, ok, ins := rhInstructions.Next()

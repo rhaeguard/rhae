@@ -305,7 +305,11 @@ func ioBuiltins() (string, map[string]stackFunc) {
 
 func raylibBindings() (string, map[string]stackFunc) {
 	getRaylib := func(ri *RhaeInstructions) *Raylib {
-		return ri.extern["raylib"].(*Raylib)
+		if ref, ok := ri.extern["external/raylib"]; ok && ref != nil {
+			return ref.(*Raylib)
+		} else {
+			panic("global handle/variable for raylib is missing")
+		}
 	}
 
 	procedures := map[string]stackFunc{

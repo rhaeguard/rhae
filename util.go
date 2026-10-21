@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"os"
 	"strconv"
 )
 
@@ -40,4 +41,14 @@ func hexToRgba(hex string) color.RGBA {
 	a, _ := strconv.ParseUint(hex[6:8], 16, 8)
 
 	return color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+}
+
+func GetFileContents(filename string) string {
+	dat, err := os.ReadFile(filename)
+
+	if err != nil {
+		panic(fmt.Sprintf("could not the open file: %s", filename))
+	}
+
+	return string(dat)
 }

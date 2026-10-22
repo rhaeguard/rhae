@@ -405,6 +405,28 @@ func raylibBindings() (string, map[string]stackFunc) {
 			out := getRaylib(ri).CheckCollisionRecs(*r1, *r2)
 			s.Push(out, BOOL)
 		},
+		"raylib:DrawLine": func(s *stack, ri *RhaeInstructions) {
+			colorV, _ := s.Pop()
+			eY, _ := s.Pop()
+			eX, _ := s.Pop()
+			sY, _ := s.Pop()
+			sX, _ := s.Pop()
+
+			sX.assertType("raylib", NUMERIC)
+			sY.assertType("raylib", NUMERIC)
+			eX.assertType("raylib", NUMERIC)
+			eY.assertType("raylib", NUMERIC)
+			colorV.assertType("raylib", STRING)
+			col := hexToRgba(colorV.v.(string))
+
+			getRaylib(ri).DrawLine(
+				int32(asInt(sX.v)),
+				int32(asInt(sY.v)),
+				int32(asInt(eX.v)),
+				int32(asInt(eX.v)),
+				col,
+			)
+		},
 		"raylib:DrawRectangleRec": func(s *stack, ri *RhaeInstructions) {
 			colorV, _ := s.Pop()
 			recV, _ := s.Pop()

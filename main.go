@@ -42,6 +42,7 @@ func getStdModules() string {
 
 	// TODO: dynamic import? raylib not standard lib
 	for _, filename := range []string{
+		"std/math.rh",
 		"std/io.rh",
 		"std/json.rh",
 		"std/list.rh",

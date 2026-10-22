@@ -178,6 +178,7 @@ type Raylib struct {
 	IsKeyDown          func(key int32) bool
 	CheckCollisionRecs func(rec1 RaylibRect, rec2 RaylibRect) bool
 	DrawRectangleRec   func(rec RaylibRect, color color.RGBA)
+	DrawLine           func(startPosX int32, startPosY int32, endPosX int32, endPosY int32, color color.RGBA)
 }
 
 func (rd *Raylib) String() string {
@@ -210,6 +211,7 @@ func RaylibInit() *Raylib {
 	purego.RegisterLibFunc(&raylib.CheckCollisionRecs, raylibHandle, "CheckCollisionRecs")
 	purego.RegisterLibFunc(&raylib.DrawText, raylibHandle, "DrawText")
 	purego.RegisterLibFunc(&raylib.DrawRectangleRec, raylibHandle, "DrawRectangleRec")
+	purego.RegisterLibFunc(&raylib.DrawLine, raylibHandle, "DrawLine")
 	purego.RegisterLibFunc(&raylib.IsKeyDown, raylibHandle, "IsKeyDown")
 
 	return &raylib

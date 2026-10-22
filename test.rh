@@ -1,0 +1,19 @@
+-3.14 sin println
+3.14 cos println
+3.14 exp println
+1.5 logN println
+
+89 ln println
+
+"----" println
+3 a<
+
+a> 3 pow_loop println
+a> 5 pow_loop println
+a> 7 pow_loop println
+a> 9 pow_loop println
+"---" println
+a> 3 pow println
+a> 5 pow println
+a> 7 pow println
+a> 9 pow println
